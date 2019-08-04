@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"serviceq/algorithm"
 	"serviceq/errorlog"
 	"serviceq/model"
 	"strconv"
@@ -152,13 +151,11 @@ func saveReqParam(req *http.Request) model.RequestParam {
 
 func dialAndSend(reqParam model.RequestParam, sqp *model.ServiceQProperties) (*http.Response, bool, error) {
 
-	choice := -1
 	var clientErr error
 
 	for retry := 0; retry < (*sqp).MaxRetries; retry++ {
 
-		choice = algorithm.ChooseServiceIndex(sqp, choice, retry)
-		upstrService := (*sqp).ServiceList[choice]
+		upstrService := (*sqp).Service
 
 		//fmt.Printf("%s] Connecting to %s\n", time.Now().UTC().Format("2006-01-02 15:04:05"), upstrService.Host)
 		// ping ip -- response/error flow below will take care of tcp connect

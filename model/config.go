@@ -3,7 +3,7 @@ package model
 type Config struct {
 	ListenerPort            string
 	Proto                   string
-	Endpoints               []Endpoint
+	Endpoint                Endpoint
 	CustomRequestHeaders    []string
 	CustomResponseHeaders   []string
 	ConcurrencyPeak         int64
@@ -11,8 +11,8 @@ type Config struct {
 	DeferredQRequestFormats []string
 	RetryGap                int
 	OutRequestTimeout       int32
-	SSLEnabled		bool
+	SSLEnabled              bool
 	SSLCertificateFile      string
-	SSLPrivateKeyFile	string
-	KeepAliveTimeout	int32
+	SSLPrivateKeyFile       string
+	KeepAliveTimeout        int32
 }

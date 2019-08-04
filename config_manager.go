@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"serviceq/model"
 	"net/url"
 	"os"
+	"serviceq/model"
 	"strconv"
 	"strings"
 )
@@ -13,7 +13,7 @@ import (
 const (
 	SQP_K_LISTENER_PORT              = "LISTENER_PORT"
 	SQP_K_PROTOCOL                   = "PROTO"
-	SQP_K_ENDPOINTS                  = "ENDPOINTS"
+	SQP_K_ENDPOINT                   = "ENDPOINT"
 	SQP_K_REQUEST_HEADERS            = "CUSTOM_REQUEST_HEADERS"
 	SQP_K_RESPONSE_HEADERS           = "CUSTOM_RESPONSE_HEADERS"
 	SQP_K_MAX_CONCURRENT_CONNS       = "CONCURRENCY_PEAK"
@@ -84,30 +84,28 @@ func populate(cfg model.Config, kvpart []string) model.Config {
 	case SQP_K_PROTOCOL:
 		cfg.Proto = kvpart[1]
 		break
-	case SQP_K_ENDPOINTS:
-		vpart := strings.Split(kvpart[1], ",")
-		for _, s := range vpart {
-			uri, err := url.ParseRequestURI(s)
-			if err != nil || (uri.Scheme != "http" && uri.Scheme != "https") {
-				fmt.Fprintf(os.Stderr, "Invalid endpoint.. exiting\n")
-				os.Exit(1)
-			}
-			var endpoint model.Endpoint
-			port := ""
-			endpoint.RawUrl = s
-			endpoint.Scheme = uri.Scheme
-			if strings.IndexByte(uri.Host, ':') == -1 || (strings.IndexByte(uri.Host, ']') != -1 && strings.Index(uri.Host, "]:") == -1) {
-				if uri.Scheme == "http" {
-					port = ":80"
-				} else if uri.Scheme == "https" {
-					port = ":443"
-				}
-			}
-			endpoint.QualifiedUrl = s + port
-			endpoint.Host = uri.Host + port
-			cfg.Endpoints = append(cfg.Endpoints, endpoint)
-			fmt.Printf("Service Addr> %s\n", endpoint.QualifiedUrl)
+	case SQP_K_ENDPOINT:
+		s := kvpart[1]
+		uri, err := url.ParseRequestURI(s)
+		if err != nil || (uri.Scheme != "http" && uri.Scheme != "https") {
+			fmt.Fprintf(os.Stderr, "Invalid endpoint.. exiting\n")
+			os.Exit(1)
 		}
+		var endpoint model.Endpoint
+		port := ""
+		endpoint.RawUrl = s
+		endpoint.Scheme = uri.Scheme
+		if strings.IndexByte(uri.Host, ':') == -1 || (strings.IndexByte(uri.Host, ']') != -1 && strings.Index(uri.Host, "]:") == -1) {
+			if uri.Scheme == "http" {
+				port = ":80"
+			} else if uri.Scheme == "https" {
+				port = ":443"
+			}
+		}
+		endpoint.QualifiedUrl = s + port
+		endpoint.Host = uri.Host + port
+		cfg.Endpoint = endpoint
+		fmt.Printf("Service Addr> %s\n", endpoint.QualifiedUrl)
 		break
 	case SQP_K_MAX_CONCURRENT_CONNS:
 		cfg.ConcurrencyPeak, _ = strconv.ParseInt(kvpart[1], 10, 64)
@@ -160,7 +158,7 @@ func populate(cfg model.Config, kvpart []string) model.Config {
 
 func validate(cfg model.Config) {
 
-	if cfg.Proto == "" || cfg.ListenerPort == "" || len(cfg.Endpoints) == 0 || cfg.ConcurrencyPeak <= 0 {
+	if cfg.Proto == "" || cfg.ListenerPort == "" || cfg.Endpoint.QualifiedUrl == "" || cfg.ConcurrencyPeak <= 0 {
 		fmt.Fprintf(os.Stderr, "Something wrong with sq.properties... exiting\n")
 		os.Exit(1)
 	}
@@ -171,16 +169,16 @@ func getAssignedProperties(cfg model.Config) model.ServiceQProperties {
 	return model.ServiceQProperties{
 		ListenerPort:            cfg.ListenerPort,
 		Proto:                   cfg.Proto,
-		ServiceList:             cfg.Endpoints,
+		Service:                 cfg.Endpoint,
 		CustomRequestHeaders:    cfg.CustomRequestHeaders,
 		CustomResponseHeaders:   cfg.CustomResponseHeaders,
 		MaxConcurrency:          cfg.ConcurrencyPeak,
 		EnableDeferredQ:         cfg.EnableDeferredQ,
 		DeferredQRequestFormats: cfg.DeferredQRequestFormats,
-		MaxRetries:              len(cfg.Endpoints),
+		MaxRetries:              1,
 		RetryGap:                cfg.RetryGap,
 		IdleGap:                 500,
-		RequestErrorLog:         make(map[string]uint64, len(cfg.Endpoints)),
+		RequestErrorLog:         0,
 		OutRequestTimeout:       cfg.OutRequestTimeout,
 		SSLEnabled:              cfg.SSLEnabled,
 		SSLCertificateFile:      cfg.SSLCertificateFile,
