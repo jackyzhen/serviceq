@@ -1,17 +1,17 @@
 package protocol
 
 import (
-	"algorithm"
 	"bytes"
-	"errorlog"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"model"
 	"net"
 	"net/http"
 	"os"
+	"serviceq/algorithm"
+	"serviceq/errorlog"
+	"serviceq/model"
 	"strconv"
 	"strings"
 	"time"
@@ -20,12 +20,11 @@ import (
 var client *http.Client
 
 const (
-
-	SERVICEQ_NO_ERR = 600
+	SERVICEQ_NO_ERR      = 600
 	SERVICEQ_FLOODED_ERR = 601
-	UPSTREAM_NO_ERR = 700
-	UPSTREAM_TCP_ERR = 701
-	UPSTREAM_HTTP_ERR = 702
+	UPSTREAM_NO_ERR      = 700
+	UPSTREAM_TCP_ERR     = 701
+	UPSTREAM_HTTP_ERR    = 702
 
 	RESPONSE_FLOODED      = "SERVICEQ_FLOODED"
 	RESPONSE_TIMED_OUT    = "UPSTREAM_TIMED_OUT"
@@ -234,7 +233,7 @@ func getCustomResponse(protocol string, statusCode int, resMsg string) *http.Res
 	var body io.ReadCloser
 	var json string
 	if resMsg != "" {
-		json = `{"sq_msg":"` + resMsg +`"}`
+		json = `{"sq_msg":"` + resMsg + `"}`
 		body = ioutil.NopCloser(bytes.NewReader([]byte(json)))
 	}
 	jsonLen := strconv.Itoa(len(json))
@@ -242,8 +241,8 @@ func getCustomResponse(protocol string, statusCode int, resMsg string) *http.Res
 	return &http.Response{
 		Proto:      protocol,
 		Status:     strconv.Itoa(statusCode) + " " + http.StatusText(statusCode),
-		StatusCode: statusCode, Header: http.Header{"Content-Type": []string{"application/json"}, "Content-Length": []string{jsonLen},},
-		Body :	    body,
+		StatusCode: statusCode, Header: http.Header{"Content-Type": []string{"application/json"}, "Content-Length": []string{jsonLen}},
+		Body: body,
 	}
 }
 
@@ -285,12 +284,12 @@ func optCloseConn(conn *net.Conn, reqParam model.RequestParam, keepAliveServe bo
 	if reqParam.Protocol == "HTTP/1.0" || reqParam.Protocol == "HTTP/1.1" { // Connection and keep-alive are ignored for http/2
 		if v, ok := reqParam.Headers["Connection"]; ok {
 			if v[0] == "keep-alive" && keepAliveServe {
-			        return false// do not close conn
+				return false // do not close conn
 			} else if v[0] == "close" || !keepAliveServe { // close conn if Connection: close or keep-alive is not part of response
 				return forceCloseConn(conn)
 			}
 		} else if reqParam.Protocol == "HTTP/1.1" && keepAliveServe {
-			return false// do not close conn if Connection header not found for protocol http/1.1 -- follow default behaviour
+			return false // do not close conn if Connection header not found for protocol http/1.1 -- follow default behaviour
 		} else {
 			return forceCloseConn(conn)
 		}

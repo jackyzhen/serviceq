@@ -1,7 +1,7 @@
 package errorlog
 
 import (
-	"model"
+	"serviceq/model"
 	"log"
 	"os"
 )

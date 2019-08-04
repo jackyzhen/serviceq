@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"model"
+	"serviceq/model"
 	"net/url"
 	"os"
 	"strconv"

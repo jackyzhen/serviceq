@@ -3,8 +3,8 @@ package main
 import (
 	"crypto/rand"
 	"crypto/tls"
-	"model"
 	"net"
+	"serviceq/model"
 	"time"
 )
 

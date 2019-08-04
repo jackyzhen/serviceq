@@ -1,7 +1,7 @@
 package main
 
 import (
-	"model"
+	"serviceq/model"
 	"testing"
 	"time"
 )

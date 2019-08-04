@@ -2,7 +2,7 @@ package algorithm
 
 import (
 	"math"
-	"model"
+	"serviceq/model"
 )
 
 func ChooseServiceIndex(sqp *model.ServiceQProperties, initialChoice int, retry int) int {

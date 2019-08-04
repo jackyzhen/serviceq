@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"model"
 	"net"
 	"os"
-	"protocol"
+	"serviceq/model"
+	"serviceq/protocol"
 	"time"
 )
 

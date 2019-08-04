@@ -2,7 +2,7 @@ package algorithm
 
 import (
 	"testing"
-	"model"
+	"serviceq/model"
 )
 
 func TestServiceIndexWithinBoundR1(t *testing.T) {
